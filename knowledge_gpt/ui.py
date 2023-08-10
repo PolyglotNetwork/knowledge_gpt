@@ -5,6 +5,7 @@ from knowledge_gpt.core.parsing import File
 import openai
 from streamlit.logger import get_logger
 from typing import NoReturn
+import requests
 
 logger = get_logger(__name__)
 
@@ -35,6 +36,19 @@ def is_file_valid(file: File) -> bool:
         return False
     return True
 
+def is_url_valid(url: str) -> bool:
+    if not url:
+        st.error("Please enter a website URL")
+        return False
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except Exception:
+        st.error(f"Invalid URL: {url}")
+        return False
+
+    return True
 
 def display_file_read_error(e: Exception) -> NoReturn:
     st.error("Error reading file. Make sure the file is not corrupted or encrypted")

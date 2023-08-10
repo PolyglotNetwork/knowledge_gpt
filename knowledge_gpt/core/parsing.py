@@ -10,6 +10,8 @@ from hashlib import md5
 from abc import abstractmethod, ABC
 from copy import deepcopy
 
+import requests
+import readability
 
 class File(ABC):
     """Represents an uploaded file comprised of Documents"""
@@ -103,3 +105,11 @@ def read_file(file: BytesIO) -> File:
         return TxtFile.from_bytes(file)
     else:
         raise NotImplementedError(f"File type {file.name.split('.')[-1]} not supported")
+
+def read_url(url: str) -> File:
+    """Reads contents of a URL with beautifulsoup and returns a File object"""
+    page = requests.get(url)
+    doc = readability.Document(page.content)
+    bytesio = BytesIO(bytes(doc.summary(),'utf-8'))
+    bytesio.name = 'sample.txt'
+    return TxtFile.from_bytes(bytesio)

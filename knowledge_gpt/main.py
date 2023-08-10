@@ -5,14 +5,14 @@ from knowledge_gpt.components.sidebar import sidebar
 from knowledge_gpt.ui import (
     wrap_doc_in_html,
     is_query_valid,
-    is_file_valid,
+    is_url_valid,
     is_open_ai_key_valid,
     display_file_read_error,
 )
 
 from knowledge_gpt.core.caching import bootstrap_caching
 
-from knowledge_gpt.core.parsing import read_file
+from knowledge_gpt.core.parsing import read_url
 from knowledge_gpt.core.chunking import chunk_file
 from knowledge_gpt.core.embedding import embed_files
 from knowledge_gpt.core.qa import query_folder
@@ -25,7 +25,7 @@ MODEL = "openai"
 # EMBEDDING, VECTOR_STORE, MODEL = ["debug"] * 3
 
 st.set_page_config(page_title="KnowledgeGPT", page_icon="📖", layout="wide")
-st.header("📖KnowledgeGPT")
+st.header("📖CompanyGPT")
 
 # Enable caching for expensive functions
 bootstrap_caching()
@@ -42,24 +42,17 @@ if not openai_api_key:
     )
 
 
-uploaded_file = st.file_uploader(
-    "Upload a pdf, docx, or txt file",
-    type=["pdf", "docx", "txt"],
-    help="Scanned documents are not supported yet!",
-)
+url = st.text_input("Company's primary website")
 
-if not uploaded_file:
+if not is_url_valid(url):
     st.stop()
 
 try:
-    file = read_file(uploaded_file)
+    file = read_url(url)
 except Exception as e:
     display_file_read_error(e)
 
 chunked_file = chunk_file(file, chunk_size=300, chunk_overlap=0)
-
-if not is_file_valid(file):
-    st.stop()
 
 if not is_open_ai_key_valid(openai_api_key):
     st.stop()
